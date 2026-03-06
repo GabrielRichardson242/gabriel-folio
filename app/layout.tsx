@@ -1,18 +1,12 @@
 import "./globals.css";
+import { displayFont, bodyFont } from "../lib/fonts";
 
-export const metadata = {
-  title: "Gabriel Folio",
-  description: "Multi-lane website portfolio",
-};
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={`${displayFont.variable} ${bodyFont.variable}`}>
+        {children}
+      </body>
     </html>
   );
 }
