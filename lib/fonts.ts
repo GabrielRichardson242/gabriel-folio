@@ -12,14 +12,14 @@ export const newRail = localFont({
   display: "swap",
 });
 
-export const displayFont = localFont({
+export const abrilFatface = localFont({
   src: "../public/fonts/AbrilFatface-Regular.woff2",
-  variable: "--font-display",
+  variable: "--font-abril",
   display: "swap",
 });
 
-export const bodyFont = localFont({
+export const mrsEaves = localFont({
   src: "../public/fonts/MrsEavesXLSerifOT-Reg.woff2",
-  variable: "--font-body",
+  variable: "--font-mrs-eaves",
   display: "swap",
 });

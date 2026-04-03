@@ -40,3 +40,38 @@ body {
   font-family: var(--font-new-rail), system-ui, -apple-system, Segoe UI, Roboto,
     Arial, sans-serif;
 }
+
+.font-british {
+  font-family: var(--font-british-rail), system-ui, -apple-system, Segoe UI,
+    Roboto, Arial, sans-serif;
+}
+
+.font-abril {
+  font-family: var(--font-abril-fatface), Georgia, "Times New Roman", serif;
+}
+
+.font-eaves {
+  font-family: var(--font-mrs-eaves), Georgia, "Times New Roman", serif;
+}
+@font-face {
+  font-family: "AbolitionTest";
+  src: url("/fonts/AbolitionTest-Regular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-abolition {
+  font-family: "AbolitionTest", sans-serif;
+}
+@font-face {
+  font-family: "Gildent";
+  src: url("/fonts/Gildent.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-gildent {
+  font-family: "Gildent", system-ui, sans-serif;
+}
