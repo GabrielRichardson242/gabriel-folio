@@ -1,5 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
+import HomeHero from "@/components/HomeHero";
+import SectionTwo from "@/components/SectionTwo";
 
 function Divider() {
   return <div className="h-[2px] w-full bg-[#CEDECE]" />;
@@ -63,85 +64,46 @@ function ProjectRow({
   );
 }
 
-export default function Home() {
+export default function CreativeTechPage() {
   return (
-    <main className="min-h-screen bg-[#242424] text-[#CEDECE]">
-      {/* Top bar */}
-      <header className="mx-auto flex max-w-[1180px] items-start justify-between px-10 pt-10">
-        <div className="font-body text-[14px] leading-5">
-          <div>Gabriel Richardson</div>
-          <div className="mt-2 opacity-70">
-            Third year Design Marketing student
-            <br />
-            Kingston School of Art.
-          </div>
-        </div>
+    <>
+      <HomeHero>
+        <SectionTwo />
 
-        <nav className="font-body text-[14px] opacity-90">
-          <Link className="hover:opacity-100" href="/info">
-            Info
-          </Link>
-          <span className="px-3 opacity-60">|</span>
-          <Link className="hover:opacity-100" href="/cv">
-            CV
-          </Link>
-          <span className="px-3 opacity-60">|</span>
-          <Link className="hover:opacity-100" href="/contact">
-            Contact
-          </Link>
-        </nav>
-      </header>
+        <section className="bg-[#242424] text-[#CEDECE] pt-[80px]">
+          <Divider />
 
-      {/* Hero */}
-      <section className="mx-auto max-w-[1180px] px-10 pb-[95px] pt-[140px]">
-        <h1 className="font-head text-[84px] leading-[0.9] md:text-[104px]">
-          CREATIVE
-          <br />
-          TECHNOLOGIST
-        </h1>
+          <ProjectRow
+            mediaOnLeft
+            media={{ src: "/glasto.jpg", alt: "Festival prototype" }}
+            title="Festival interactive game prototype"
+            role="Role: Concept and Technology Lead in a 2 person tech team"
+            context="Third Year University Project"
+          />
 
-        <p className="font-body mt-6 text-[18px] text-[#DF4939]">
-          Building Interactive, Audience-led Systems
-        </p>
+          <Divider />
 
-        <p className="font-body mt-2 text-[13px] text-[#DF4939] opacity-90">
-          Web-GL&nbsp;&nbsp;|&nbsp;&nbsp;Unity&nbsp;&nbsp;|&nbsp;&nbsp;Live
-          Interactivity
-        </p>
-      </section>
+          <ProjectRow
+            mediaOnLeft={false}
+            placeholderLabel="Ambroise"
+            title="Ambroise digital gallery spaces"
+            role="Role: Project Manager, Developer, Brand Designer, Strategist"
+            context="Personal Project, turned Third Year University Project"
+          />
 
-      <Divider />
+          <Divider />
 
-      {/* Projects */}
-      <ProjectRow
-        mediaOnLeft
-        media={{ src: "/glasto.jpg", alt: "Festival prototype" }} // replace with gif later
-        title="Festival interactive game prototype"
-        role="Role: Concept and Technology Lead in a 2 person tech team"
-        context="Third Year University Project"
-      />
+          <ProjectRow
+            mediaOnLeft
+            placeholderLabel="Shits and gigs"
+            title="Blink 182 interactive experience"
+            role="Role: Project Manager, Strategist, Lead Prototyper"
+            context="Second Year University Project"
+          />
 
-      <Divider />
-
-      <ProjectRow
-        mediaOnLeft={false}
-        placeholderLabel="Ambroise"
-        title="Ambroise digital gallery spaces"
-        role="Role: Project Manager, Developer, Brand Designer, Strategist"
-        context="Personal Project, turned Third Year University Project"
-      />
-
-      <Divider />
-
-      <ProjectRow
-        mediaOnLeft
-        placeholderLabel="Shits and gigs"
-        title="Blink 182 interactive experience"
-        role="Role: Project Manager, Strategist, Lead Prototyper"
-        context="Second Year University Project"
-      />
-
-      <Divider />
-    </main>
+          <Divider />
+        </section>
+      </HomeHero>
+    </>
   );
 }

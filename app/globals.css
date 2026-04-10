@@ -75,3 +75,15 @@ body {
 .font-gildent {
   font-family: "Gildent", system-ui, sans-serif;
 }
+
+@font-face {
+  font-family: "Grith";
+  src: url("/fonts/Grith.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-grith {
+  font-family: "Grith", sans-serif;
+}

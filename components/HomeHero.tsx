@@ -2,46 +2,34 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
-import { useEffect, useRef, useState, useLayoutEffect } from "react";
-
-const navItems = [
-  { href: "/cv", label: "CV" },
-  { href: "/contact", label: "Email" },
-  { href: "/info", label: "Info" },
-];
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
-function ClosedHeaderBar({
-  interactive,
+function SiteBanner({
   style,
 }: {
-  interactive: boolean;
   style?: CSSProperties;
 }) {
   return (
-    <div className="border-b border-black/10 bg-[#dadada]" style={style}>
-      <div className="flex h-[64px] items-center justify-between gap-6 px-5 text-[11px] uppercase tracking-[0.14em] text-[#111111] min-[900px]:px-8 min-[900px]:text-[12px]">
-        <div className="font-body whitespace-nowrap">Gabriel Richardson</div>
-
-        <div className="flex items-center gap-5 min-[640px]:gap-8">
-          {navItems.map((item) =>
-            interactive ? (
-              <Link
-                key={item.label}
-                href={item.href}
-                className="font-body whitespace-nowrap transition-opacity duration-150 hover:opacity-65"
-              >
-                {item.label}
-              </Link>
-            ) : (
-              <span key={item.label} className="font-body whitespace-nowrap">
-                {item.label}
-              </span>
-            ),
-          )}
-        </div>
+    <div
+      className="w-full"
+      style={{
+        background: "#e5e5e5",
+        ...style,
+      }}
+    >
+      <div className="h-px w-full bg-[#8f8f90]" />
+      <div className="flex h-[42px] w-full items-center pl-10 pr-6">
+        <Link
+          href="/"
+          className="ml-[30px] no-underline hover:no-underline font-british text-[14px] leading-none tracking-[0.01em] text-[#969697] transition-opacity duration-150 hover:opacity-70"
+        >
+          GABRIEL RICHARDSON
+        </Link>
       </div>
+      <div className="h-px w-full bg-[#8f8f90]" />
     </div>
   );
 }
@@ -52,15 +40,30 @@ export default function HomeHero({
   children: ReactNode;
 }) {
   const sectionRef = useRef<HTMLElement | null>(null);
-  const face1MeasureRef = useRef<HTMLSpanElement | null>(null);
-  const face2MeasureRef = useRef<HTMLDivElement | null>(null);
 
-  const [progress, setProgress] = useState(0);
+  const face1MeasureRef = useRef<HTMLSpanElement | null>(null);
+  const face2MeasureRef = useRef<HTMLSpanElement | null>(null);
+
+  const face1VisibleRef = useRef<HTMLSpanElement | null>(null);
+  const face2VisibleRef = useRef<HTMLSpanElement | null>(null);
+
   const [scrollYValue, setScrollYValue] = useState(0);
+  const [progress, setProgress] = useState(0);
+
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(0);
 
   const [face1FitScaleX, setFace1FitScaleX] = useState(1);
+  const [face1FitScaleY, setFace1FitScaleY] = useState(1);
+
   const [face2FitScaleX, setFace2FitScaleX] = useState(1);
-  const [viewportWidth, setViewportWidth] = useState(0);
+  const [face2FitScaleY, setFace2FitScaleY] = useState(1);
+
+  const [face1NaturalWidth, setFace1NaturalWidth] = useState(0);
+  const [face2NaturalWidth, setFace2NaturalWidth] = useState(0);
+
+  const [fontsReady, setFontsReady] = useState(false);
+  const [measuredReady, setMeasuredReady] = useState(false);
 
   useEffect(() => {
     let frameId = 0;
@@ -74,10 +77,10 @@ export default function HomeHero({
         const rect = section.getBoundingClientRect();
         const sectionTop = y + rect.top;
         const sectionHeight = section.offsetHeight;
-        const viewportHeight = window.innerHeight;
+        const currentViewportHeight = window.innerHeight;
 
         const start = sectionTop;
-        const end = sectionTop + sectionHeight - viewportHeight;
+        const end = sectionTop + sectionHeight - currentViewportHeight;
         const raw = end > start ? (y - start) / (end - start) : 0;
 
         setProgress(clamp(raw));
@@ -88,266 +91,242 @@ export default function HomeHero({
 
     frameId = window.requestAnimationFrame(update);
 
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
+    return () => window.cancelAnimationFrame(frameId);
   }, []);
+
+  const HERO_PROGRESS = clamp(progress / 0.7);
+
+  const BANNER_H = 44;
+
+  const FACE_H = 450;
+  const FACE_MIN = 10;
+  const SEAM_H = -72;
+  const FACE1_Y_NUDGE_PX = -45;
+
+  const FACE2_FULL_H = 490;
+  const FACE2_STRIP_H = 40;
+  const FACE2_COMPRESSED_H = 28;
+
+  const FACE2_LOCK_TOP_RATIO = 0.13;
+  const CONTENT_GUTTER = -300;
+
+  const FACE2_LOCK_TOP = viewportHeight * FACE2_LOCK_TOP_RATIO;
+
+  const face1TopDrift = -20 * Math.pow(HERO_PROGRESS, 1.35);
+  const compressionProgress = Math.pow(HERO_PROGRESS, 0.5);
+
+  const face1Height = Math.max(
+    FACE_MIN,
+    FACE_H - compressionProgress * (FACE_H - FACE_MIN),
+  );
+
+  const face1AnimatedScaleY = 0.01 + (1 - compressionProgress) * 0.99;
+
+  const face1Top = face1TopDrift;
+  const face1Bottom = face1Top + face1Height;
+
+  const face2BottomStart = FACE_H + SEAM_H + FACE2_STRIP_H;
+  const face2BottomEnd = 440;
+
+  const face2RevealBottom = lerp(
+    face2BottomStart,
+    face2BottomEnd,
+    Math.pow(HERO_PROGRESS, 0.9),
+  );
+
+  const face2RevealTop = face1Bottom + SEAM_H;
+  const face2RevealHeight = Math.max(
+    FACE2_STRIP_H,
+    face2RevealBottom - face2RevealTop,
+  );
+
+  const face2RevealProgress = clamp(
+    (face2RevealHeight - FACE2_STRIP_H) / (FACE2_FULL_H - FACE2_STRIP_H),
+  );
+
+  const face2RevealScaleY = 0.0 + face2RevealProgress * 0.99;
+
+  const face2CrossAmount = FACE2_LOCK_TOP - face2RevealTop;
+  const face2CompressProgress = clamp(face2CrossAmount / 76);
+
+  const face2Top = lerp(face2RevealTop, FACE2_LOCK_TOP, face2CompressProgress);
+
+  const face2Height = lerp(
+    face2RevealHeight,
+    FACE2_COMPRESSED_H,
+    Math.pow(face2CompressProgress, 0.85),
+  );
+
+  const face2Bottom = face2Top + face2Height;
+
+  const face2ScaleY = lerp(
+    face2RevealScaleY,
+    0.03,
+    Math.pow(face2CompressProgress, 0.85),
+  );
+
+  const mechanismBottom = face2Bottom;
 
   useLayoutEffect(() => {
     const measure = () => {
-      const vw = window.innerWidth;
-      setViewportWidth(vw);
+      const width = window.innerWidth;
+      const height = window.innerHeight;
 
-      const usableWidth = vw;
+      setContainerWidth(width);
+      setViewportHeight(height);
 
       if (face1MeasureRef.current) {
-        const naturalWidth =
-          face1MeasureRef.current.getBoundingClientRect().width;
-        if (naturalWidth > 0) {
-          setFace1FitScaleX(usableWidth / naturalWidth);
+        const rect = face1MeasureRef.current.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          setFace1NaturalWidth(rect.width);
+          setFace1FitScaleX(width / rect.width);
+          setFace1FitScaleY(FACE_H / rect.height);
         }
       }
 
       if (face2MeasureRef.current) {
-        const naturalWidth =
-          face2MeasureRef.current.getBoundingClientRect().width;
-        if (naturalWidth > 0) {
-          setFace2FitScaleX(usableWidth / naturalWidth);
+        const rect = face2MeasureRef.current.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          setFace2NaturalWidth(rect.width);
+          setFace2FitScaleX(width / rect.width);
+          setFace2FitScaleY(FACE2_FULL_H / rect.height);
         }
       }
     };
 
-    measure();
-    window.addEventListener("resize", measure);
-
-    const t1 = window.setTimeout(measure, 50);
-    const t2 = window.setTimeout(measure, 250);
-
-    return () => {
-      window.removeEventListener("resize", measure);
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
+    const run = async () => {
+      if ("fonts" in document) {
+        await document.fonts.ready;
+      }
+      setFontsReady(true);
+      measure();
+      setMeasuredReady(true);
     };
+
+    run();
+    window.addEventListener("resize", run);
+
+    return () => window.removeEventListener("resize", run);
   }, []);
 
-  /**
-   * Stage timing
-   * 0.00 -> 0.42  Face 1 compresses / Face 2 expands
-   * 0.42 -> 0.78  Face 2 compresses / Face 3 expands
-   * 0.78 -> 0.92  Header settles
-   * 0.92 -> 1.00  Handoff
-   */
-  const stage1Progress = clamp(progress / 0.42);
-  const stage2Progress = clamp((progress - 0.42) / 0.36);
-  const stage3Progress = clamp((progress - 0.78) / 0.14);
-  const handoffProgress = clamp((progress - 0.92) / 0.08);
-
-  // Geometry
-  const FACE_H = 340;
-  const FACE_MIN = 8;
-  const SEAM_H = 10;
-  const HEADER_H = 64;
-
-  // Base vertical overfill so the type fills the face more aggressively
-  const face1BaseStretch = 1.22;
-  const face2BaseStretch = 1.14;
-
-  // Face 1 motion
-  const face1Height = Math.max(
-    FACE_MIN,
-    FACE_H - stage1Progress * (FACE_H - FACE_MIN),
-  );
-  const face1AnimatedScaleY =
-    0.02 + (1 - Math.pow(stage1Progress, 0.82)) * 0.98;
-  const face1ScaleY = face1BaseStretch * face1AnimatedScaleY;
-
-  // Face 2 motion
-  const face2OpenHeight = FACE_MIN + stage1Progress * (FACE_H - FACE_MIN);
-  const face2CloseHeight = FACE_H - stage2Progress * (FACE_H - FACE_MIN);
-  const face2Height =
-    stage2Progress > 0
-      ? Math.max(FACE_MIN, face2CloseHeight)
-      : Math.max(FACE_MIN, face2OpenHeight);
-
-  const face2AnimatedScaleYOpen = 0.06 + stage1Progress * 0.94;
-  const face2AnimatedScaleYClose = 1 - stage2Progress * 0.82;
-  const face2ScaleY =
-    stage2Progress > 0
-      ? face2BaseStretch * face2AnimatedScaleYClose
-      : face2BaseStretch * face2AnimatedScaleYOpen;
-  const face2Origin = stage2Progress > 0 ? "bottom left" : "top left";
-
-  // Face 3 motion
-  const face3Height = Math.max(0, stage3Progress * HEADER_H);
-  const face3ScaleY = 0.08 + stage3Progress * 0.92;
-
-  // Header handoff
-  const persistentHeaderOpacity = handoffProgress;
-  const mechanismHeaderOpacity = 1 - handoffProgress;
-
-  // Dynamic mechanism geometry
-  const mechanismTop = 0;
-  const seam1Top = mechanismTop + face1Height;
-  const face2Top = seam1Top + SEAM_H;
-  const seam2Top = face2Top + face2Height;
-  const face3Top = seam2Top + SEAM_H;
-
   return (
-    <>
-      <div className="fixed left-4 top-4 z-[9999] rounded bg-black px-3 py-2 text-xs text-white">
-        <div>scrollY: {scrollYValue.toFixed(0)}</div>
-        <div>progress: {progress.toFixed(3)}</div>
-        <div>s1: {stage1Progress.toFixed(3)}</div>
-        <div>s2: {stage2Progress.toFixed(3)}</div>
-        <div>s3: {stage3Progress.toFixed(3)}</div>
-        <div>vw: {viewportWidth}</div>
-        <div>f1x: {face1FitScaleX.toFixed(3)}</div>
-        <div>f2x: {face2FitScaleX.toFixed(3)}</div>
-      </div>
+  <>
+    <div className="fixed inset-x-0 top-0 z-50 w-screen">
+      <SiteBanner />
+    </div>
 
-      <section ref={sectionRef} className="relative h-[240vh] bg-[#ededed]">
-        <div className="sticky top-0 h-screen overflow-hidden bg-[#ededed]">
-          <div className="relative h-full w-full overflow-hidden px-0">
+    <div className="fixed left-4 top-[56px] z-[9999] rounded bg-black px-3 py-2 text-xs text-white">
+      <div>scrollY: {scrollYValue.toFixed(0)}</div>
+      <div>progress: {progress.toFixed(3)}</div>
+      <div>hero: {HERO_PROGRESS.toFixed(3)}</div>
+      <div>w: {containerWidth}</div>
+      <div>vh: {viewportHeight}</div>
+      <div>lock ratio: {FACE2_LOCK_TOP_RATIO.toFixed(3)}</div>
+      <div>lock top: {FACE2_LOCK_TOP.toFixed(1)}</div>
+      <div>f2 reveal: {face2RevealProgress.toFixed(3)}</div>
+      <div>f2 compress: {face2CompressProgress.toFixed(3)}</div>
+      <div>f1 top: {face1Top.toFixed(1)}</div>
+      <div>f1 bottom: {face1Bottom.toFixed(1)}</div>
+      <div>f2 reveal top: {face2RevealTop.toFixed(1)}</div>
+      <div>f2 top: {face2Top.toFixed(1)}</div>
+      <div>f2 bottom: {face2Bottom.toFixed(1)}</div>
+      <div>f2 height: {face2Height.toFixed(1)}</div>
+      <div>mech bottom: {mechanismBottom.toFixed(1)}</div>
+    </div>
+
+    <div className="pointer-events-none absolute left-[-99999px] top-[-99999px] opacity-0">
+      <span
+        ref={face1MeasureRef}
+        className="font-grith text-[240px] uppercase whitespace-nowrap"
+      >
+        Creative Technologist
+      </span>
+
+      <span
+        ref={face2MeasureRef}
+        className="font-grith text-[220px] uppercase whitespace-nowrap"
+      >
+        Building Interactive Systems
+      </span>
+    </div>
+
+    <section
+      ref={sectionRef}
+      className="relative h-[160vh] bg-[#ededed] transition-opacity duration-150"
+      style={{ opacity: fontsReady && measuredReady ? 1 : 0 }}
+    >
+      <div className="sticky top-[44px] h-[calc(100vh-44px)] overflow-hidden">
+        <div className="relative h-full w-full overflow-hidden">
+          {/* FACE 1 */}
+          <div
+            className="absolute left-0 right-0 overflow-hidden"
+            style={{
+              top: face1Top,
+              width: "100vw",
+              marginLeft: "calc(50% - 50vw)",
+              height: face1Height,
+              color: "#000000",
+            }}
+          >
             <div
-              className="relative w-full"
               style={{
-                height: `${face3Top + HEADER_H}px`,
+                width: face1NaturalWidth,
+                transform: `translateY(${FACE1_Y_NUDGE_PX}px) scaleX(${face1FitScaleX}) scaleY(${face1FitScaleY * face1AnimatedScaleY})`,
+                transformOrigin: "left top",
+                willChange: "transform",
               }}
             >
-              {/* FACE 1 */}
-              <div
-                className="absolute left-0 right-0 overflow-hidden bg-[#dadada]"
-                style={{
-                  top: `${mechanismTop}px`,
-                  height: `${face1Height}px`,
-                }}
+              <span
+                ref={face1VisibleRef}
+                className="font-grith text-[240px] uppercase whitespace-nowrap"
               >
-                <div
-                  className="flex w-full items-start overflow-hidden"
-                  style={{
-                    height: `${FACE_H}px`,
-                    transform: `scaleY(${face1ScaleY})`,
-                    transformOrigin: "top left",
-                    willChange: "transform",
-                  }}
-                >
-                  <div className="w-screen overflow-hidden">
-                    <div
-                      className="font-abolition origin-left uppercase leading-[0.76] tracking-[-0.035em] text-[#111111] text-[17vw]"
-                      style={{
-                        transform: `scaleX(${face1FitScaleX}) translateY(0.01em)`,
-                        transformOrigin: "left top",
-                        width: "max-content",
-                        willChange: "transform",
-                      }}
-                    >
-                      <span
-                        ref={face1MeasureRef}
-                        className="block whitespace-nowrap"
-                      >
-                        Creative Technologist
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                Creative Technologist
+              </span>
+            </div>
+          </div>
 
-              {/* SEAM 1 */}
-              <div
-                className="absolute left-0 right-0 bg-[#ededed]"
-                style={{
-                  top: `${seam1Top}px`,
-                  height: `${SEAM_H}px`,
-                }}
-              />
-
-              {/* FACE 2 */}
-              <div
-                className="absolute left-0 right-0 overflow-hidden bg-[#dadada]"
-                style={{
-                  top: `${face2Top}px`,
-                  height: `${face2Height}px`,
-                }}
+          {/* FACE 2 */}
+          <div
+            className="absolute left-0 right-0 overflow-hidden"
+            style={{
+              top: face2Top,
+              width: "100vw",
+              marginLeft: "calc(50% - 50vw)",
+              height: face2Height,
+              color: "#000000",
+            }}
+          >
+            <div
+              style={{
+                width: face2NaturalWidth,
+                position: "absolute",
+                top: 0,
+                left: 0,
+                transform: `scaleX(${face2FitScaleX}) scaleY(${face2FitScaleY * face2ScaleY})`,
+                transformOrigin: "left top",
+                willChange: "transform",
+              }}
+            >
+              <span
+                ref={face2VisibleRef}
+                className="font-grith text-[220px] uppercase whitespace-nowrap"
               >
-                <div
-                  className="overflow-hidden"
-                  style={{
-                    height: `${FACE_H}px`,
-                    transform: `scaleY(${face2ScaleY})`,
-                    transformOrigin: face2Origin,
-                    willChange: "transform",
-                  }}
-                >
-                  <div className="w-screen overflow-hidden">
-                    <div
-                      ref={face2MeasureRef}
-                      className="font-gildent origin-left uppercase leading-[0.82] tracking-[-0.035em] text-[#111111] text-[12vw]"
-                      style={{
-                        transform: `scaleX(${face2FitScaleX}) translateY(0.01em)`,
-                        transformOrigin: "left top",
-                        width: "max-content",
-                        willChange: "transform",
-                      }}
-                    >
-                      <span className="block whitespace-nowrap">
-                        Building Interactive
-                      </span>
-                      <span className="block whitespace-nowrap">
-                        Systems
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* SEAM 2 */}
-              <div
-                className="absolute left-0 right-0 bg-[#ededed]"
-                style={{
-                  top: `${seam2Top}px`,
-                  height: `${SEAM_H}px`,
-                }}
-              />
-
-              {/* FACE 3 */}
-              <div
-                className="absolute left-0 right-0 overflow-hidden"
-                style={{
-                  top: `${face3Top}px`,
-                  height: `${face3Height}px`,
-                  opacity: mechanismHeaderOpacity,
-                }}
-              >
-                <div
-                  style={{
-                    transform: `scaleY(${face3ScaleY})`,
-                    transformOrigin: "top left",
-                    willChange: "transform, opacity",
-                  }}
-                >
-                  <ClosedHeaderBar interactive={false} />
-                </div>
-              </div>
+                Building Interactive Systems
+              </span>
             </div>
           </div>
         </div>
-      </section>
-
-      <div className="sticky top-0 z-40 h-0">
-        <div
-          style={{
-            opacity: persistentHeaderOpacity,
-            pointerEvents: persistentHeaderOpacity > 0.98 ? "auto" : "none",
-            transform: `translateY(${(1 - persistentHeaderOpacity) * -8}px)`,
-            transition: "opacity 120ms linear, transform 120ms linear",
-            willChange: "opacity, transform",
-          }}
-        >
-          <ClosedHeaderBar interactive />
-        </div>
       </div>
+    </section>
 
+    <div
+      className="bg-[#ededed]"
+      style={{
+        marginTop: `-${Math.max(0, viewportHeight - mechanismBottom - CONTENT_GUTTER)}px`,
+      }}
+    >
       {children}
-    </>
-  );
+    </div>
+  </>
+);
 }

@@ -1,4 +1,5 @@
 import HomeHero from "@/components/HomeHero";
+import SectionTwo from "@/components/SectionTwo";
 
 const placeholderProjects = [
   {
@@ -25,6 +26,8 @@ export default function Home() {
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#ededed] text-[#969697]">
       <HomeHero>
+        <SectionTwo />
+
         <section className="bg-[#ededed] px-5 pb-16 min-[900px]:px-8 min-[900px]:pb-24">
           <div className="grid gap-6">
             {placeholderProjects.map((project) => (
