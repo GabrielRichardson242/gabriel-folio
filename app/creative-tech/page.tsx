@@ -1,109 +1,61 @@
-import Image from "next/image";
 import HomeHero from "@/components/HomeHero";
 import SectionTwo from "@/components/SectionTwo";
 
-function Divider() {
-  return <div className="h-[2px] w-full bg-[#CEDECE]" />;
-}
+const placeholderProjects = [
+  {
+    index: "01",
+    title: "Experiential systems for live audiences",
+    category: "Prototype block",
+    note: "Placeholder project module for future homepage work.",
+  },
+  {
+    index: "02",
+    title: "Digital environments for culture-led brands",
+    category: "Case study block",
+    note: "Placeholder project module for future homepage work.",
+  },
+  {
+    index: "03",
+    title: "Interaction concepts with a restrained visual pace",
+    category: "Archive block",
+    note: "Placeholder project module for future homepage work.",
+  },
+];
 
-function ProjectRow({
-  title,
-  role,
-  context,
-  mediaOnLeft,
-  media,
-  placeholderLabel,
-}: {
-  title: string;
-  role: string;
-  context: string;
-  mediaOnLeft: boolean;
-  media?: { src: string; alt: string };
-  placeholderLabel?: string;
-}) {
+export default function Home() {
   return (
-    <section className="py-[110px]">
-      <div className="mx-auto max-w-[1180px] px-10">
-        <div
-          className={`grid grid-cols-1 items-center gap-14 md:grid-cols-2 ${
-            mediaOnLeft ? "" : "md:[&>*:first-child]:order-2"
-          }`}
-        >
-          <div className="flex justify-center md:justify-start">
-            {media ? (
-              <Image
-                src={media.src}
-                alt={media.alt}
-                width={560}
-                height={360}
-                className="h-auto w-full max-w-[560px] border border-[#CEDECE]/60"
-                priority={false}
-              />
-            ) : (
-              <div className="flex h-[320px] w-[320px] items-center justify-center border border-[#CEDECE]/60 bg-[#D9D9D9] text-black">
-                <div className="font-body text-3xl font-semibold leading-tight">
-                  {placeholderLabel ?? "Placeholder"}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <h2 className="font-head text-[56px] leading-[0.95] md:text-[72px]">
-              {title}
-            </h2>
-
-            <div className="mt-6 font-body text-[13px] leading-5 text-[#CEDECE]">
-              <div>{role}</div>
-              <div className="opacity-70">{context}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export default function CreativeTechPage() {
-  return (
-    <>
+    <main className="min-h-screen overflow-x-hidden bg-[#232323] text-[#ededed]">
       <HomeHero>
         <SectionTwo />
 
-        <section className="bg-[#242424] text-[#CEDECE] pt-[80px]">
-          <Divider />
+        <section className="bg-[#232323] px-5 pb-16 min-[900px]:px-8 min-[900px]:pb-24">
+          <div className="grid gap-6">
+            {placeholderProjects.map((project) => (
+              <article
+                key={project.index}
+                className="grid gap-8 border border-white/10 bg-[#2b2b2b] px-5 py-6 min-[900px]:grid-cols-[120px_minmax(0,1fr)_280px] min-[900px]:items-end min-[900px]:gap-10 min-[900px]:px-8 min-[900px]:py-9"
+              >
+                <div className="font-body text-[11px] uppercase tracking-[0.14em] text-[#b5b5b5] min-[900px]:text-[12px]">
+                  {project.index}
+                </div>
 
-          <ProjectRow
-            mediaOnLeft
-            media={{ src: "/glasto.jpg", alt: "Festival prototype" }}
-            title="Festival interactive game prototype"
-            role="Role: Concept and Technology Lead in a 2 person tech team"
-            context="Third Year University Project"
-          />
+                <div>
+                  <p className="font-body text-[11px] uppercase tracking-[0.14em] text-[#b5b5b5] min-[900px]:text-[12px]">
+                    {project.category}
+                  </p>
+                  <h2 className="mt-3 font-head text-[clamp(2.75rem,6vw,5.5rem)] uppercase leading-[0.82] tracking-[-0.06em] text-[#ededed]">
+                    {project.title}
+                  </h2>
+                </div>
 
-          <Divider />
-
-          <ProjectRow
-            mediaOnLeft={false}
-            placeholderLabel="Ambroise"
-            title="Ambroise digital gallery spaces"
-            role="Role: Project Manager, Developer, Brand Designer, Strategist"
-            context="Personal Project, turned Third Year University Project"
-          />
-
-          <Divider />
-
-          <ProjectRow
-            mediaOnLeft
-            placeholderLabel="Shits and gigs"
-            title="Blink 182 interactive experience"
-            role="Role: Project Manager, Strategist, Lead Prototyper"
-            context="Second Year University Project"
-          />
-
-          <Divider />
+                <p className="font-body max-w-[32ch] text-sm leading-6 text-[#b5b5b5]">
+                  {project.note}
+                </p>
+              </article>
+            ))}
+          </div>
         </section>
       </HomeHero>
-    </>
+    </main>
   );
 }

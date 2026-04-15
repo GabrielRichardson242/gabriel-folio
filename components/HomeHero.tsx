@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
@@ -16,29 +16,25 @@ function SiteBanner({
     <div
       className="w-full"
       style={{
-        background: "#e5e5e5",
+        background: "#232323",
         ...style,
       }}
     >
-      <div className="h-px w-full bg-[#8f8f90]" />
+      <div className="h-px w-full bg-[#ededed]" />
       <div className="flex h-[42px] w-full items-center pl-10 pr-6">
         <Link
           href="/"
-          className="ml-[30px] no-underline hover:no-underline font-british text-[14px] leading-none tracking-[0.01em] text-[#969697] transition-opacity duration-150 hover:opacity-70"
+          className="ml-[30px] no-underline hover:no-underline font-british text-[14px] leading-none tracking-[0.01em] text-[#ededed] transition-opacity duration-150 hover:opacity-70"
         >
           GABRIEL RICHARDSON
         </Link>
       </div>
-      <div className="h-px w-full bg-[#8f8f90]" />
+      <div className="h-px w-full bg-[#ededed]" />
     </div>
   );
 }
 
-export default function HomeHero({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default function HomeHero() {
   const sectionRef = useRef<HTMLElement | null>(null);
 
   const face1MeasureRef = useRef<HTMLSpanElement | null>(null);
@@ -49,6 +45,7 @@ export default function HomeHero({
 
   const [scrollYValue, setScrollYValue] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [rawProgress, setRawProgress] = useState(0);
 
   const [containerWidth, setContainerWidth] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(0);
@@ -83,6 +80,7 @@ export default function HomeHero({
         const end = sectionTop + sectionHeight - currentViewportHeight;
         const raw = end > start ? (y - start) / (end - start) : 0;
 
+        setRawProgress(raw);
         setProgress(clamp(raw));
       }
 
@@ -94,26 +92,25 @@ export default function HomeHero({
     return () => window.cancelAnimationFrame(frameId);
   }, []);
 
-  const HERO_PROGRESS = clamp(progress / 0.7);
+  const HERO_PROGRESS = Math.pow(progress, 1.65);
+  const HERO_PROGRESS_UNCLAMPED = Math.pow(Math.max(0, rawProgress), 1.65);
 
-  const BANNER_H = 44;
-
-  const FACE_H = 450;
+  const FACE_H = 600;
   const FACE_MIN = 10;
-  const SEAM_H = -72;
-  const FACE1_Y_NUDGE_PX = -45;
+  const SEAM_H = -94;
+  const FACE1_Y_NUDGE_PX = -42;
+  const FACE1_TEXT_SCALE_Y = 0.9;
 
   const FACE2_FULL_H = 490;
   const FACE2_STRIP_H = 40;
-  const FACE2_COMPRESSED_H = 28;
+  const FACE2_COMPRESSED_H = 0.001;
 
-  const FACE2_LOCK_TOP_RATIO = 0.13;
-  const CONTENT_GUTTER = -300;
+  const FACE2_LOCK_TOP_RATIO = 0.02;
 
   const FACE2_LOCK_TOP = viewportHeight * FACE2_LOCK_TOP_RATIO;
 
-  const face1TopDrift = -20 * Math.pow(HERO_PROGRESS, 1.35);
-  const compressionProgress = Math.pow(HERO_PROGRESS, 0.5);
+  const face1TopDrift = 0.1 * Math.pow(HERO_PROGRESS, 1.6);
+  const compressionProgress = Math.pow(HERO_PROGRESS, 0.6);
 
   const face1Height = Math.max(
     FACE_MIN,
@@ -126,15 +123,15 @@ export default function HomeHero({
   const face1Bottom = face1Top + face1Height;
 
   const face2BottomStart = FACE_H + SEAM_H + FACE2_STRIP_H;
-  const face2BottomEnd = 440;
+  const face2BottomEnd = 280;
 
   const face2RevealBottom = lerp(
     face2BottomStart,
     face2BottomEnd,
-    Math.pow(HERO_PROGRESS, 0.9),
+    Math.pow(HERO_PROGRESS, 0.88),
   );
 
-  const face2RevealTop = face1Bottom + SEAM_H;
+  const face2RevealTop = (FACE_H + SEAM_H) + (face1Bottom - FACE_H) * 0.9;
   const face2RevealHeight = Math.max(
     FACE2_STRIP_H,
     face2RevealBottom - face2RevealTop,
@@ -146,26 +143,36 @@ export default function HomeHero({
 
   const face2RevealScaleY = 0.0 + face2RevealProgress * 0.99;
 
-  const face2CrossAmount = FACE2_LOCK_TOP - face2RevealTop;
-  const face2CompressProgress = clamp(face2CrossAmount / 76);
+  const FACE2_COMPRESS_START = 0.9;
+  const FACE2_COMPRESS_SPEED = 1.6;
 
-  const face2Top = lerp(face2RevealTop, FACE2_LOCK_TOP, face2CompressProgress);
+  const face2CompressRaw = Math.max(
+    0,
+    (HERO_PROGRESS_UNCLAMPED - FACE2_COMPRESS_START) * FACE2_COMPRESS_SPEED
+  );
+
+  const face2CompressClamped = clamp(face2CompressRaw);
+
+  const face2TopCompressProgress = Math.pow(face2CompressRaw, 1.2);
+  const face2BodyCompressProgress = Math.pow(face2CompressRaw, 1.6);
+
+  const face2Top = lerp(
+    face2RevealTop,
+    FACE2_LOCK_TOP,
+    face2TopCompressProgress,
+  );
 
   const face2Height = lerp(
     face2RevealHeight,
     FACE2_COMPRESSED_H,
-    Math.pow(face2CompressProgress, 0.85),
+    face2BodyCompressProgress,
   );
-
-  const face2Bottom = face2Top + face2Height;
 
   const face2ScaleY = lerp(
     face2RevealScaleY,
-    0.03,
-    Math.pow(face2CompressProgress, 0.85),
+    0.001,
+    face2BodyCompressProgress,
   );
-
-  const mechanismBottom = face2Bottom;
 
   useLayoutEffect(() => {
     const measure = () => {
@@ -210,123 +217,113 @@ export default function HomeHero({
   }, []);
 
   return (
-  <>
-    <div className="fixed inset-x-0 top-0 z-50 w-screen">
-      <SiteBanner />
-    </div>
+    <>
+      <div className="fixed inset-x-0 top-0 z-50 w-screen">
+        <SiteBanner />
+      </div>
 
-    <div className="fixed left-4 top-[56px] z-[9999] rounded bg-black px-3 py-2 text-xs text-white">
-      <div>scrollY: {scrollYValue.toFixed(0)}</div>
-      <div>progress: {progress.toFixed(3)}</div>
-      <div>hero: {HERO_PROGRESS.toFixed(3)}</div>
-      <div>w: {containerWidth}</div>
-      <div>vh: {viewportHeight}</div>
-      <div>lock ratio: {FACE2_LOCK_TOP_RATIO.toFixed(3)}</div>
-      <div>lock top: {FACE2_LOCK_TOP.toFixed(1)}</div>
-      <div>f2 reveal: {face2RevealProgress.toFixed(3)}</div>
-      <div>f2 compress: {face2CompressProgress.toFixed(3)}</div>
-      <div>f1 top: {face1Top.toFixed(1)}</div>
-      <div>f1 bottom: {face1Bottom.toFixed(1)}</div>
-      <div>f2 reveal top: {face2RevealTop.toFixed(1)}</div>
-      <div>f2 top: {face2Top.toFixed(1)}</div>
-      <div>f2 bottom: {face2Bottom.toFixed(1)}</div>
-      <div>f2 height: {face2Height.toFixed(1)}</div>
-      <div>mech bottom: {mechanismBottom.toFixed(1)}</div>
-    </div>
+      <div className="fixed left-4 top-[56px] z-[9999] rounded bg-black px-3 py-2 text-xs text-white">
+        <div>scrollY: {scrollYValue.toFixed(0)}</div>
+        <div>progress: {progress.toFixed(3)}</div>
+        <div>hero: {HERO_PROGRESS.toFixed(3)}</div>
+        <div>w: {containerWidth}</div>
+        <div>vh: {viewportHeight}</div>
+        <div>lock ratio: {FACE2_LOCK_TOP_RATIO.toFixed(3)}</div>
+        <div>lock top: {FACE2_LOCK_TOP.toFixed(1)}</div>
+        <div>f2 reveal: {face2RevealProgress.toFixed(3)}</div>
+        <div>f2 top compress: {face2TopCompressProgress.toFixed(3)}</div>
+        <div>f2 body compress: {face2BodyCompressProgress.toFixed(3)}</div>
+        <div>f1 top: {face1Top.toFixed(1)}</div>
+        <div>f1 bottom: {face1Bottom.toFixed(1)}</div>
+        <div>f2 reveal top: {face2RevealTop.toFixed(1)}</div>
+        <div>f2 top: {face2Top.toFixed(1)}</div>
+        <div>f2 height: {face2Height.toFixed(1)}</div>
+      </div>
 
-    <div className="pointer-events-none absolute left-[-99999px] top-[-99999px] opacity-0">
-      <span
-        ref={face1MeasureRef}
-        className="font-grith text-[240px] uppercase whitespace-nowrap"
+      <div className="pointer-events-none absolute left-[-99999px] top-[-99999px] opacity-0">
+        <span
+          ref={face1MeasureRef}
+          className="font-grith text-[240px] uppercase whitespace-nowrap"
+        >
+          Creative Technologist
+        </span>
+
+        <span
+          ref={face2MeasureRef}
+          className="font-grith text-[220px] uppercase whitespace-nowrap"
+        >
+          Building Interactive Systems
+        </span>
+      </div>
+
+      <section
+        ref={sectionRef}
+        className="relative h-[120vh] bg-[#232323] transition-opacity duration-150"
+        style={{ opacity: fontsReady && measuredReady ? 1 : 0 }}
       >
-        Creative Technologist
-      </span>
-
-      <span
-        ref={face2MeasureRef}
-        className="font-grith text-[220px] uppercase whitespace-nowrap"
-      >
-        Building Interactive Systems
-      </span>
-    </div>
-
-    <section
-      ref={sectionRef}
-      className="relative h-[160vh] bg-[#ededed] transition-opacity duration-150"
-      style={{ opacity: fontsReady && measuredReady ? 1 : 0 }}
-    >
-      <div className="sticky top-[44px] h-[calc(100vh-44px)] overflow-hidden">
-        <div className="relative h-full w-full overflow-hidden">
-          {/* FACE 1 */}
-          <div
-            className="absolute left-0 right-0 overflow-hidden"
-            style={{
-              top: face1Top,
-              width: "100vw",
-              marginLeft: "calc(50% - 50vw)",
-              height: face1Height,
-              color: "#000000",
-            }}
-          >
+        <div className="sticky top-[44px] h-[calc(100vh-44px)] overflow-hidden">
+          <div className="relative h-full w-full overflow-hidden">
+            {/* FACE 1 */}
             <div
+              className="absolute left-0 right-0 overflow-hidden"
               style={{
-                width: face1NaturalWidth,
-                transform: `translateY(${FACE1_Y_NUDGE_PX}px) scaleX(${face1FitScaleX}) scaleY(${face1FitScaleY * face1AnimatedScaleY})`,
-                transformOrigin: "left top",
-                willChange: "transform",
+                top: face1Top,
+                width: "100vw",
+                marginLeft: "calc(50% - 50vw)",
+                height: face1Height,
+                color: "#ededed",
               }}
             >
-              <span
-                ref={face1VisibleRef}
-                className="font-grith text-[240px] uppercase whitespace-nowrap"
+              <div
+                style={{
+                  width: face1NaturalWidth,
+                  transform: `translateY(${FACE1_Y_NUDGE_PX}px) scaleX(${face1FitScaleX}) scaleY(${face1FitScaleY * face1AnimatedScaleY * FACE1_TEXT_SCALE_Y})`,
+                  transformOrigin: "left top",
+                  willChange: "transform",
+                }}
               >
-                Creative Technologist
-              </span>
+                <span
+                  ref={face1VisibleRef}
+                  className="font-grith text-[240px] uppercase whitespace-nowrap"
+                >
+                  Creative Technologist
+                </span>
+              </div>
             </div>
-          </div>
 
-          {/* FACE 2 */}
-          <div
-            className="absolute left-0 right-0 overflow-hidden"
-            style={{
-              top: face2Top,
-              width: "100vw",
-              marginLeft: "calc(50% - 50vw)",
-              height: face2Height,
-              color: "#000000",
-            }}
-          >
+            {/* FACE 2 */}
             <div
+              className="absolute left-0 right-0 overflow-hidden"
               style={{
-                width: face2NaturalWidth,
-                position: "absolute",
-                top: 0,
-                left: 0,
-                transform: `scaleX(${face2FitScaleX}) scaleY(${face2FitScaleY * face2ScaleY})`,
-                transformOrigin: "left top",
-                willChange: "transform",
+                top: face2Top,
+                width: "100vw",
+                marginLeft: "calc(50% - 50vw)",
+                height: face2Height,
+                color: "#ededed",
               }}
             >
-              <span
-                ref={face2VisibleRef}
-                className="font-grith text-[220px] uppercase whitespace-nowrap"
+              <div
+                style={{
+                  width: face2NaturalWidth,
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  transform: `scaleX(${face2FitScaleX}) scaleY(${face2FitScaleY * face2ScaleY})`,
+                  transformOrigin: "left top",
+                  willChange: "transform",
+                }}
               >
-                Building Interactive Systems
-              </span>
+                <span
+                  ref={face2VisibleRef}
+                  className="font-grith text-[220px] uppercase whitespace-nowrap"
+                >
+                  Building Interactive Systems
+                </span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
-
-    <div
-      className="bg-[#ededed]"
-      style={{
-        marginTop: `-${Math.max(0, viewportHeight - mechanismBottom - CONTENT_GUTTER)}px`,
-      }}
-    >
-      {children}
-    </div>
-  </>
-);
+      </section>
+    </>
+  );
 }

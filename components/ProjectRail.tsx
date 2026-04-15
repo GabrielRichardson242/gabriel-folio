@@ -1,21 +1,42 @@
 import Link from "next/link";
-import type { Project } from "@/lib/projects";
+import type { Project } from "@/app/types/projects";
 
 function ProjectTile({ project }: { project: Project }) {
   const content = (
-    <div className="grid grid-cols-[220px_1fr] gap-6">
-      <div className="aspect-square w-[220px] bg-white/90 text-black p-6">
-        <div className="text-3xl font-semibold leading-tight">{project.tileLabel}</div>
-      </div>
+    <div className="group relative h-full w-full overflow-hidden border-y border-white/10 bg-[#2b2b2b]">
+      {project.image ? (
+        <img
+          src={project.image}
+          srcSet={
+            project.image.endsWith(".jpg")
+              ? `${project.image} 1x, ${project.image.replace(".jpg", "@2x.jpg")} 2x`
+              : undefined
+          }
+          alt={project.title}
+          className="absolute inset-0 h-full w-full object-cover"
+          draggable={false}
+        />
+      ) : (
+        <div className="absolute inset-0 bg-[#3a3a3a]" />
+      )}
 
-      <div className="flex flex-col justify-center">
-        <div className="text-3xl font-semibold">{project.title}</div>
-        <div className="mt-4 flex flex-wrap gap-2 text-sm opacity-80">
-          {project.skills.map((s) => (
-            <span key={s} className="border border-white/20 px-2 py-1">
-              {s}
-            </span>
-          ))}
+      <div className="absolute inset-0 bg-[rgba(220,232,245,0.38)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+      <div className="pointer-events-none absolute inset-0 z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+        <div className="flex h-full flex-col justify-between px-8 py-8 min-[900px]:px-10 min-[900px]:py-10">
+          <div className="max-w-[720px]">
+            <div className="font-body text-[11px] uppercase tracking-[0.14em] text-[#ededed] min-[900px]:text-[12px]">
+              {project.category}
+            </div>
+
+            <h2 className="mt-4 font-head text-[clamp(3rem,6vw,6.4rem)] leading-[0.9] tracking-[-0.07em] text-[#ededed]">
+              {project.title}
+            </h2>
+
+            <p className="mt-4 max-w-[34ch] font-body text-[clamp(1.05rem,1.5vw,1.45rem)] leading-[1.25] text-[#ededed]">
+              {project.note}
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -23,16 +44,16 @@ function ProjectTile({ project }: { project: Project }) {
 
   if (project.disabled) {
     return (
-      <section className="snap-start px-6">
-        <div className="mx-auto max-w-6xl py-12 opacity-40">{content}</div>
+      <section data-project className="snap-start h-[78vh]">
+        <div className="h-full w-full">{content}</div>
       </section>
     );
   }
 
   return (
-    <section className="snap-start px-6">
-      <Link href={`/project/${project.slug}`} className="block">
-        <div className="mx-auto max-w-6xl py-12 hover:opacity-95">{content}</div>
+    <section data-project className="snap-start h-[78vh]">
+      <Link href={`/project/${project.slug}`} className="block h-full w-full">
+        <div className="h-full w-full">{content}</div>
       </Link>
     </section>
   );
@@ -40,13 +61,10 @@ function ProjectTile({ project }: { project: Project }) {
 
 export default function ProjectRail({ projects }: { projects: Project[] }) {
   return (
-    <div className="h-[calc(100vh-170px)] overflow-y-auto scroll-smooth snap-y snap-mandatory">
-      {/* Peek effect: tiles are shorter than viewport */}
-      <div className="py-10 space-y-10">
-        {projects.map((p) => (
-          <ProjectTile key={p.slug} project={p} />
-        ))}
-      </div>
+    <div className="snap-y snap-mandatory bg-[#232323]">
+      {projects.map((project) => (
+        <ProjectTile key={project.slug} project={project} />
+      ))}
     </div>
   );
 }
