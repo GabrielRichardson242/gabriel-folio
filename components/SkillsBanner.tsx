@@ -45,7 +45,7 @@ function SkillRow({
             return (
               <span
                 key={`separator-${index}`}
-                className="mr-[38px] shrink-0 text-[#232323]"
+                className="mr-[38px] shrink-0 text-[#ededed]"
               >
                 |
               </span>
@@ -59,7 +59,7 @@ function SkillRow({
               key={`${item}-${index}`}
               className={`shrink-0 transition-colors duration-200 ${itemSpacingClass}`}
               style={{
-                color: isActive ? "#ff4b6e" : "#232323",
+                color: isActive ? "#ff4b6e" : "#ededed",
               }}
             >
               {item}
@@ -78,15 +78,15 @@ export default function SkillsBanner({
   const activeProject = projects[activeIndex] ?? projects[0];
 
   return (
-    <div className="sticky top-[44px] z-40 bg-[#ededed]">
-      <div className="border-y border-white/30 bg-[#ededed]">
+    <div className="sticky top-[44px] z-40 bg-[#232323]">
+      <div className="border-y border-white/30 bg-[#232323]">
         <SkillRow
           items={THINKING_SKILLS}
           activeItems={activeProject.thinkingSkills}
           itemSpacingClass="mr-[60px]"
         />
 
-        <div className="h-px w-full bg-[#232323]" />
+        <div className="h-px w-full bg-[#ededed]" />
 
         <SkillRow
           items={TOOLS}

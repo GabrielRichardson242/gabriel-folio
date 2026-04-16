@@ -34,8 +34,19 @@ function SiteBanner({
   );
 }
 
-export default function HomeHero() {
+export default function HomeHero({
+  onTransitionTrigger,
+  onResetPointChange,
+  onHeroSettlePointChange,
+  triggerResetKey,
+}: {
+  onTransitionTrigger?: () => void;
+  onResetPointChange?: (targetY: number) => void;
+  onHeroSettlePointChange?: (targetY: number) => void;
+  triggerResetKey?: number;
+}) {
   const sectionRef = useRef<HTMLElement | null>(null);
+  const hasTriggeredRef = useRef(false);
 
   const face1MeasureRef = useRef<HTMLSpanElement | null>(null);
   const face2MeasureRef = useRef<HTMLSpanElement | null>(null);
@@ -95,9 +106,13 @@ export default function HomeHero() {
   const HERO_PROGRESS = Math.pow(progress, 1.65);
   const HERO_PROGRESS_UNCLAMPED = Math.pow(Math.max(0, rawProgress), 1.65);
 
+  useEffect(() => {
+    hasTriggeredRef.current = false;
+  }, [triggerResetKey]);
+
   const FACE_H = 600;
   const FACE_MIN = 10;
-  const SEAM_H = -94;
+  const SEAM_H = -114;
   const FACE1_Y_NUDGE_PX = -42;
   const FACE1_TEXT_SCALE_Y = 0.9;
 
@@ -106,7 +121,6 @@ export default function HomeHero() {
   const FACE2_COMPRESSED_H = 0.001;
 
   const FACE2_LOCK_TOP_RATIO = 0.02;
-
   const FACE2_LOCK_TOP = viewportHeight * FACE2_LOCK_TOP_RATIO;
 
   const face1TopDrift = 0.1 * Math.pow(HERO_PROGRESS, 1.6);
@@ -123,7 +137,7 @@ export default function HomeHero() {
   const face1Bottom = face1Top + face1Height;
 
   const face2BottomStart = FACE_H + SEAM_H + FACE2_STRIP_H;
-  const face2BottomEnd = 280;
+  const face2BottomEnd = 320;
 
   const face2RevealBottom = lerp(
     face2BottomStart,
@@ -131,7 +145,7 @@ export default function HomeHero() {
     Math.pow(HERO_PROGRESS, 0.88),
   );
 
-  const face2RevealTop = (FACE_H + SEAM_H) + (face1Bottom - FACE_H) * 0.9;
+  const face2RevealTop = FACE_H + SEAM_H + (face1Bottom - FACE_H) * 0.9;
   const face2RevealHeight = Math.max(
     FACE2_STRIP_H,
     face2RevealBottom - face2RevealTop,
@@ -141,20 +155,18 @@ export default function HomeHero() {
     (face2RevealHeight - FACE2_STRIP_H) / (FACE2_FULL_H - FACE2_STRIP_H),
   );
 
-  const face2RevealScaleY = 0.0 + face2RevealProgress * 0.99;
+  const face2RevealScaleY = face2RevealProgress * 0.99;
 
   const FACE2_COMPRESS_START = 0.9;
-  const FACE2_COMPRESS_SPEED = 1.6;
+  const FACE2_COMPRESS_SPEED = 1.0;
 
   const face2CompressRaw = Math.max(
     0,
-    (HERO_PROGRESS_UNCLAMPED - FACE2_COMPRESS_START) * FACE2_COMPRESS_SPEED
+    (HERO_PROGRESS_UNCLAMPED - FACE2_COMPRESS_START) * FACE2_COMPRESS_SPEED,
   );
 
-  const face2CompressClamped = clamp(face2CompressRaw);
-
-  const face2TopCompressProgress = Math.pow(face2CompressRaw, 1.2);
-  const face2BodyCompressProgress = Math.pow(face2CompressRaw, 1.6);
+  const face2TopCompressProgress = clamp(Math.pow(face2CompressRaw, 0.9));
+  const face2BodyCompressProgress = clamp(Math.pow(face2CompressRaw, 1.2));
 
   const face2Top = lerp(
     face2RevealTop,
@@ -173,6 +185,104 @@ export default function HomeHero() {
     0.001,
     face2BodyCompressProgress,
   );
+
+  useEffect(() => {
+    if (!sectionRef.current || !onResetPointChange) return;
+
+    const sectionRect = sectionRef.current.getBoundingClientRect();
+    const sectionAbsoluteTop = window.scrollY + sectionRect.top;
+    const headerOffset = 44;
+
+    const targetY = Math.max(
+      0,
+      sectionAbsoluteTop + face2RevealTop - headerOffset,
+    );
+
+    onResetPointChange(targetY);
+  }, [face2RevealTop, onResetPointChange]);
+
+  useEffect(() => {
+    if (!sectionRef.current || !onHeroSettlePointChange) return;
+
+    const targetRevealProgress = 0.56;
+
+    const getRevealProgressForRaw = (candidateRaw: number) => {
+      const candidateProgress = clamp(candidateRaw);
+      const candidateHeroProgress = Math.pow(candidateProgress, 1.65);
+
+      const candidateCompressionProgress = Math.pow(candidateHeroProgress, 0.6);
+      const candidateFace1Height = Math.max(
+        FACE_MIN,
+        FACE_H - candidateCompressionProgress * (FACE_H - FACE_MIN),
+      );
+      const candidateFace1TopDrift =
+        0.1 * Math.pow(candidateHeroProgress, 1.6);
+      const candidateFace1Bottom =
+        candidateFace1TopDrift + candidateFace1Height;
+
+      const candidateFace2RevealBottom = lerp(
+        face2BottomStart,
+        face2BottomEnd,
+        Math.pow(candidateHeroProgress, 0.88),
+      );
+
+      const candidateFace2RevealTop =
+        FACE_H + SEAM_H + (candidateFace1Bottom - FACE_H) * 0.9;
+
+      const candidateFace2RevealHeight = Math.max(
+        FACE2_STRIP_H,
+        candidateFace2RevealBottom - candidateFace2RevealTop,
+      );
+
+      return clamp(
+        (candidateFace2RevealHeight - FACE2_STRIP_H) /
+          (FACE2_FULL_H - FACE2_STRIP_H),
+      );
+    };
+
+    let bestRaw = 0;
+    let bestDiff = Number.POSITIVE_INFINITY;
+
+    for (let i = 0; i <= 1000; i += 1) {
+      const candidateRaw = i / 1000;
+      const candidateReveal = getRevealProgressForRaw(candidateRaw);
+      const diff = Math.abs(candidateReveal - targetRevealProgress);
+
+      if (diff < bestDiff) {
+        bestDiff = diff;
+        bestRaw = candidateRaw;
+      }
+    }
+
+    const sectionRect = sectionRef.current.getBoundingClientRect();
+    const sectionAbsoluteTop = window.scrollY + sectionRect.top;
+    const sectionHeight = sectionRef.current.offsetHeight;
+    const currentViewportHeight = window.innerHeight;
+
+    const start = sectionAbsoluteTop;
+    const end = sectionAbsoluteTop + sectionHeight - currentViewportHeight;
+
+    const targetY = Math.max(0, start + (end - start) * bestRaw);
+
+    onHeroSettlePointChange(targetY);
+  }, [
+    onHeroSettlePointChange,
+    viewportHeight,
+    FACE_H,
+    FACE_MIN,
+    SEAM_H,
+    FACE2_FULL_H,
+    FACE2_STRIP_H,
+    face2BottomStart,
+    face2BottomEnd,
+  ]);
+
+  useEffect(() => {
+    if (!hasTriggeredRef.current && face2BodyCompressProgress >= 0.34) {
+      hasTriggeredRef.current = true;
+      onTransitionTrigger?.();
+    }
+  }, [face2BodyCompressProgress, onTransitionTrigger]);
 
   useLayoutEffect(() => {
     const measure = () => {
@@ -222,7 +332,7 @@ export default function HomeHero() {
         <SiteBanner />
       </div>
 
-      <div className="fixed left-4 top-[56px] z-[9999] rounded bg-black px-3 py-2 text-xs text-white">
+      {/* <div className="fixed left-4 top-[56px] z-[9999] rounded bg-black px-3 py-2 text-xs text-white">
         <div>scrollY: {scrollYValue.toFixed(0)}</div>
         <div>progress: {progress.toFixed(3)}</div>
         <div>hero: {HERO_PROGRESS.toFixed(3)}</div>
@@ -238,7 +348,7 @@ export default function HomeHero() {
         <div>f2 reveal top: {face2RevealTop.toFixed(1)}</div>
         <div>f2 top: {face2Top.toFixed(1)}</div>
         <div>f2 height: {face2Height.toFixed(1)}</div>
-      </div>
+      </div> */}
 
       <div className="pointer-events-none absolute left-[-99999px] top-[-99999px] opacity-0">
         <span
@@ -263,7 +373,6 @@ export default function HomeHero() {
       >
         <div className="sticky top-[44px] h-[calc(100vh-44px)] overflow-hidden">
           <div className="relative h-full w-full overflow-hidden">
-            {/* FACE 1 */}
             <div
               className="absolute left-0 right-0 overflow-hidden"
               style={{
@@ -291,7 +400,6 @@ export default function HomeHero() {
               </div>
             </div>
 
-            {/* FACE 2 */}
             <div
               className="absolute left-0 right-0 overflow-hidden"
               style={{

@@ -1,7 +1,13 @@
 import Link from "next/link";
 import type { Project } from "@/app/types/projects";
 
-function ProjectTile({ project }: { project: Project }) {
+function ProjectTile({
+  project,
+  index,
+}: {
+  project: Project;
+  index: number;
+}) {
   const content = (
     <div className="group relative h-full w-full overflow-hidden border-y border-white/10 bg-[#2b2b2b]">
       {project.image ? (
@@ -42,16 +48,22 @@ function ProjectTile({ project }: { project: Project }) {
     </div>
   );
 
+  const sectionProps = {
+    "data-project": true,
+    "data-project-index": index,
+    className: "h-[78vh]",
+  };
+
   if (project.disabled) {
     return (
-      <section data-project className="snap-start h-[78vh]">
+      <section {...sectionProps}>
         <div className="h-full w-full">{content}</div>
       </section>
     );
   }
 
   return (
-    <section data-project className="snap-start h-[78vh]">
+    <section {...sectionProps}>
       <Link href={`/project/${project.slug}`} className="block h-full w-full">
         <div className="h-full w-full">{content}</div>
       </Link>
@@ -61,10 +73,12 @@ function ProjectTile({ project }: { project: Project }) {
 
 export default function ProjectRail({ projects }: { projects: Project[] }) {
   return (
-    <div className="snap-y snap-mandatory bg-[#232323]">
-      {projects.map((project) => (
-        <ProjectTile key={project.slug} project={project} />
+    <div className="bg-[#232323]">
+      {projects.map((project, index) => (
+        <ProjectTile key={project.slug} project={project} index={index} />
       ))}
+
+      <div data-project-tail className="h-[40vh]" />
     </div>
   );
 }
