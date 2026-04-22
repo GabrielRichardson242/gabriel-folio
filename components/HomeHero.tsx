@@ -3,43 +3,20 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import SiteBanner from "@/components/SiteBanner";
 
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
-function SiteBanner({
-  style,
-}: {
-  style?: CSSProperties;
-}) {
-  return (
-    <div
-      className="w-full"
-      style={{
-        background: "#232323",
-        ...style,
-      }}
-    >
-      <div className="h-px w-full bg-[#ededed]" />
-      <div className="flex h-[42px] w-full items-center pl-10 pr-6">
-        <Link
-          href="/"
-          className="ml-[30px] no-underline hover:no-underline font-british text-[14px] leading-none tracking-[0.01em] text-[#ededed] transition-opacity duration-150 hover:opacity-70"
-        >
-          GABRIEL RICHARDSON
-        </Link>
-      </div>
-      <div className="h-px w-full bg-[#ededed]" />
-    </div>
-  );
-}
 
 export default function HomeHero({
+  isActive = true,
   onTransitionTrigger,
   onResetPointChange,
   onHeroSettlePointChange,
   triggerResetKey,
 }: {
+  isActive?: boolean;
   onTransitionTrigger?: () => void;
   onResetPointChange?: (targetY: number) => void;
   onHeroSettlePointChange?: (targetY: number) => void;
@@ -278,11 +255,12 @@ export default function HomeHero({
   ]);
 
   useEffect(() => {
+    if (!isActive) return;
     if (!hasTriggeredRef.current && face2BodyCompressProgress >= 0.34) {
       hasTriggeredRef.current = true;
       onTransitionTrigger?.();
     }
-  }, [face2BodyCompressProgress, onTransitionTrigger]);
+  }, [isActive, face2BodyCompressProgress, onTransitionTrigger]);
 
   useLayoutEffect(() => {
     const measure = () => {
@@ -331,24 +309,6 @@ export default function HomeHero({
       <div className="fixed inset-x-0 top-0 z-50 w-screen">
         <SiteBanner />
       </div>
-
-      {/* <div className="fixed left-4 top-[56px] z-[9999] rounded bg-black px-3 py-2 text-xs text-white">
-        <div>scrollY: {scrollYValue.toFixed(0)}</div>
-        <div>progress: {progress.toFixed(3)}</div>
-        <div>hero: {HERO_PROGRESS.toFixed(3)}</div>
-        <div>w: {containerWidth}</div>
-        <div>vh: {viewportHeight}</div>
-        <div>lock ratio: {FACE2_LOCK_TOP_RATIO.toFixed(3)}</div>
-        <div>lock top: {FACE2_LOCK_TOP.toFixed(1)}</div>
-        <div>f2 reveal: {face2RevealProgress.toFixed(3)}</div>
-        <div>f2 top compress: {face2TopCompressProgress.toFixed(3)}</div>
-        <div>f2 body compress: {face2BodyCompressProgress.toFixed(3)}</div>
-        <div>f1 top: {face1Top.toFixed(1)}</div>
-        <div>f1 bottom: {face1Bottom.toFixed(1)}</div>
-        <div>f2 reveal top: {face2RevealTop.toFixed(1)}</div>
-        <div>f2 top: {face2Top.toFixed(1)}</div>
-        <div>f2 height: {face2Height.toFixed(1)}</div>
-      </div> */}
 
       <div className="pointer-events-none absolute left-[-99999px] top-[-99999px] opacity-0">
         <span
