@@ -6,5 +6,4 @@ export type Project = {
   image?: string;
   disabled?: boolean;
   thinkingSkills: string[];
-  tools: string[];
 };

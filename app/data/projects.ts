@@ -9,16 +9,10 @@ export const projects: Project[] = [
     image: "/projects/glasto-hero.jpg",
     thinkingSkills: [
       "Concept Development",
-      "System Thinking",
+      "Systems Thinking",
       "Interaction Design",
       "Rapid Prototyping",
       "Physical Builds",
-    ],
-    tools: [
-      "Blender",
-      "Unity",
-      "Code",
-      "Adobe Suite",
     ],
   },
   {
@@ -29,16 +23,11 @@ export const projects: Project[] = [
     image: "/placeholder-ambroise.jpg",
     thinkingSkills: [
       "Concept Development",
-      "System Thinking",
+      "Systems Thinking",
       "Interaction Design",
-      "AI-assisted Development",
+      "Rapid Prototyping",
+      "Evidence-Based Pitching",
       "Scalable Systems",
-    ],
-    tools: [
-      "React",
-      "Next.js",
-      "Three.js",
-      "Code",
     ],
   },
   {
@@ -49,15 +38,10 @@ export const projects: Project[] = [
     image: "/placeholder-pace.jpg",
     thinkingSkills: [
       "Concept Development",
-      "System Thinking",
+      "Systems Thinking",
       "Interaction Design",
       "Rapid Prototyping",
       "Physical Builds",
-    ],
-    tools: [
-      "Adobe Suite",
-      "Code",
-      "Microcontrollers",
     ],
     disabled: true,
   },

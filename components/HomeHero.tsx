@@ -119,7 +119,7 @@ export default function HomeHero({
   const face2RevealBottom = lerp(
     face2BottomStart,
     face2BottomEnd,
-    Math.pow(HERO_PROGRESS, 0.88),
+    Math.pow(HERO_PROGRESS, 1.15),
   );
 
   const face2RevealTop = FACE_H + SEAM_H + (face1Bottom - FACE_H) * 0.9;
@@ -135,15 +135,15 @@ export default function HomeHero({
   const face2RevealScaleY = face2RevealProgress * 0.99;
 
   const FACE2_COMPRESS_START = 0.9;
-  const FACE2_COMPRESS_SPEED = 1.0;
+  const FACE2_COMPRESS_SPEED = 0.9;
 
   const face2CompressRaw = Math.max(
     0,
     (HERO_PROGRESS_UNCLAMPED - FACE2_COMPRESS_START) * FACE2_COMPRESS_SPEED,
   );
 
-  const face2TopCompressProgress = clamp(Math.pow(face2CompressRaw, 0.9));
-  const face2BodyCompressProgress = clamp(Math.pow(face2CompressRaw, 1.2));
+  const face2TopCompressProgress = clamp(Math.pow(face2CompressRaw, 1.35));
+  const face2BodyCompressProgress = clamp(Math.pow(face2CompressRaw, 1.6));
 
   const face2Top = lerp(
     face2RevealTop,

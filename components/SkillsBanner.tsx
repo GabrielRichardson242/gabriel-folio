@@ -5,71 +5,15 @@ type SkillsBannerProps = {
   activeIndex: number;
 };
 
-const THINKING_SKILLS = [
+const PRACTICE_AREAS = [
   "Concept Development",
-  "System Thinking",
+  "Systems Thinking",
   "Interaction Design",
   "Rapid Prototyping",
-  "AI-assisted Development",
+  "Evidence-Based Pitching",
   "Scalable Systems",
   "Physical Builds",
 ];
-
-const TOOLS = [
-  "Blender",
-  "React",
-  "Next.js",
-  "Three.js",
-  "Unity",
-  "Code",
-  "Microcontrollers",
-  "Adobe Suite",
-];
-
-function SkillRow({
-  items,
-  activeItems,
-  itemSpacingClass,
-}: {
-  items: string[];
-  activeItems: string[];
-  itemSpacingClass: string;
-}) {
-  const repeatedItems = [...items, "|", ...items];
-
-  return (
-    <div className="overflow-hidden">
-      <div className="font-disket flex items-center whitespace-nowrap px-8 py-[6px] text-[10px] uppercase tracking-[0.08em] min-[900px]:px-20">
-        {repeatedItems.map((item, index) => {
-          if (item === "|") {
-            return (
-              <span
-                key={`separator-${index}`}
-                className="mr-[38px] shrink-0 text-[#ededed]"
-              >
-                |
-              </span>
-            );
-          }
-
-          const isActive = activeItems.includes(item);
-
-          return (
-            <span
-              key={`${item}-${index}`}
-              className={`shrink-0 transition-colors duration-200 ${itemSpacingClass}`}
-              style={{
-                color: isActive ? "#ff4b6e" : "#ededed",
-              }}
-            >
-              {item}
-            </span>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 export default function SkillsBanner({
   projects,
@@ -80,19 +24,37 @@ export default function SkillsBanner({
   return (
     <div className="sticky top-[44px] z-40 bg-[#232323]">
       <div className="border-y border-white/30 bg-[#232323]">
-        <SkillRow
-          items={THINKING_SKILLS}
-          activeItems={activeProject.thinkingSkills}
-          itemSpacingClass="mr-[60px]"
-        />
+        <div className="overflow-hidden">
+          <div className="font-disket flex items-center whitespace-nowrap px-8 py-[8px] text-[10px] uppercase tracking-[0.08em] min-[900px]:px-20">
+            {[...PRACTICE_AREAS, "|", ...PRACTICE_AREAS].map((item, index) => {
+              if (item === "|") {
+                return (
+                  <span
+                    key={`separator-${index}`}
+                    className="mr-[56px] shrink-0 text-[#ededed]"
+                  >
+                    |
+                  </span>
+                );
+              }
 
-        <div className="h-px w-full bg-[#ededed]" />
+              const activeSkills = activeProject?.thinkingSkills ?? [];
+              const isActive = activeSkills.includes(item);
 
-        <SkillRow
-          items={TOOLS}
-          activeItems={activeProject.tools}
-          itemSpacingClass="mr-[112px]"
-        />
+              return (
+                <span
+                  key={`${item}-${index}`}
+                  className="mr-[72px] shrink-0 transition-colors duration-200"
+                  style={{
+                    color: isActive ? "#ededed" : "#373737",
+                  }}
+                >
+                  {item}
+                </span>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
