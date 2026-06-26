@@ -99,3 +99,15 @@ body {
 .font-disket {
   font-family: "Disket", monospace;
 }
+
+@font-face {
+  font-family: "Kalmansk";
+  src: url("/fonts/Kalmansk.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-kalmansk {
+  font-family: "Kalmansk", sans-serif;
+}

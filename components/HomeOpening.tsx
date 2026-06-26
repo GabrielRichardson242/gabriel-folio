@@ -11,6 +11,15 @@ const smoothstep = (edge0: number, edge1: number, value: number) => {
   return t * t * (3 - 2 * t);
 };
 
+const capabilities = [
+  "Opportunity Discovery",
+  "Systems Thinking",
+  "Evidence Based Pitching",
+  "Rapid Prototyping",
+  "Experience Design",
+  "Self Directed Learning",
+];
+
 export default function HomeOpening() {
   const sectionRef = useRef<HTMLElement | null>(null);
 
@@ -41,7 +50,6 @@ export default function HomeOpening() {
         const scrollRange = sectionHeight - window.innerHeight;
 
         const raw = scrollRange > 0 ? (y - sectionTop) / scrollRange : 0;
-
         setProgress(clamp(raw));
       }
 
@@ -49,7 +57,6 @@ export default function HomeOpening() {
     };
 
     frameId = window.requestAnimationFrame(update);
-
     return () => window.cancelAnimationFrame(frameId);
   }, []);
 
@@ -83,23 +90,22 @@ export default function HomeOpening() {
 
     measure();
     window.addEventListener("resize", measure);
-
     return () => window.removeEventListener("resize", measure);
   }, []);
 
   const stickyHeight = Math.max(0, viewportHeight - 44);
 
-  const anchorY = stickyHeight * 0.52;
-  const gutter = 32;
+  const anchorY = stickyHeight * 0.46;
+  const gutter = 48;
 
   const phase1 = smoothstep(0.08, 0.52, progress);
-  const phase2 = smoothstep(0.52, 0.86, progress);
+  const phase2 = smoothstep(0.52, 1.04, progress);
 
-  const face1FullHeight = 600;
-  const face1MinHeight = 8;
+  const face1FullHeight = Math.min(600, stickyHeight * 0.58);
+  const face1MinHeight = 0;
 
-  const face2FullHeight = 490;
-  const face2MinHeight = 8;
+  const face2FullHeight = Math.min(420, stickyHeight * 0.48);
+  const face2MinHeight = 0;
 
   const face1Height = lerp(face1FullHeight, face1MinHeight, phase1);
   const face1ScaleY =
@@ -118,22 +124,13 @@ export default function HomeOpening() {
   const face2ScaleX =
     face2NaturalWidth > 0 ? viewportWidth / face2NaturalWidth : 1;
 
-  /*
-    Phase 1:
-    - Face 2 grows upward from anchorY.
-    - Its bottom is locked to anchorY.
-
-    Phase 2:
-    - Face 2 is pinned to the top.
-    - Its bottom compresses upward.
-    - Intro follows face2 bottom, preserving the gutter.
-  */
   const face2RevealTop = anchorY - face2RevealHeight;
   const face2PinnedTop = 44;
 
   const face2Top = lerp(face2RevealTop, face2PinnedTop, phase2);
   const face2Bottom = face2Top + face2Height;
-  const face2Opacity = phase1 <= 0.02 ? 0 : 1;
+  const face2Opacity =
+    phase1 <= 0.02 ? 0 : 1 - smoothstep(0.94, 0.98, phase2);
 
   const introTop = face2Bottom + gutter;
 
@@ -159,7 +156,7 @@ export default function HomeOpening() {
 
       <section
         ref={sectionRef}
-        className="relative hidden h-[220vh] bg-[#232323] text-[#ededed] min-[900px]:block"
+        className="relative hidden h-[260vh] bg-[#232323] text-[#ededed] min-[900px]:block"
         style={{ opacity: fontsReady && measuredReady ? 1 : 0 }}
       >
         <div className="sticky top-[44px] h-[calc(100vh-44px)] overflow-hidden">
@@ -215,66 +212,87 @@ export default function HomeOpening() {
             </div>
 
             <div
-              className="absolute left-0 right-0 grid gap-16 px-24"
+              className="absolute left-0 right-0 bg-[#9c871f] text-white"
               style={{
                 top: introTop,
-                gridTemplateColumns: "620px 1fr",
+                minHeight: stickyHeight,
                 willChange: "top",
               }}
             >
-              <div className="flex max-w-[620px] flex-col gap-16">
-                <div>
-                  <h2 className="font-abolition text-[clamp(3.5rem,5vw,5.5rem)] uppercase italic leading-none text-[#ededed]/70">
-                    What I do.
-                  </h2>
-
-                  <div className="mt-7 max-w-[34ch] font-body text-[clamp(1.45rem,1.7vw,1.9rem)] font-bold leading-[1.35] text-[#ededed]">
+              <div className="grid min-h-[220vh] grid-cols-[32vw_1fr]">
+                <div className="pl-[5vw] pr-10 py-14">
+                  <div className="max-w-[42rem] font-body text-[clamp(1.35rem,1.65vw,2rem)] font-bold leading-[1.42]">
                     <p>
-                      I work between design, technology and strategy to identify
-                      opportunities, shape them into experience-led propositions,
-                      and build prototypes that test their value.
+                      I work between Design, Technology and Strategy to identify
+                      entrepreneurial opportunities, shape them into pitch ready 
+                      propositions, and build prototypes that test their value.
                     </p>
+
+                    <p className="mt-16">
+                      Through university projects and independent ventures, I
+                      have developed a practice centred around rapid
+                      experimentation. Using emerging AI workflows, I&apos;ve
+                      enabled fast, self-directed uptake of technical skills and
+                      tools, allowing me to move ideas from concept to testable 
+                      prototypes under tight deadlines.
+                    </p>
+
+                    <p className="mt-16">
+                      This has offered freedom in our ideation, allowing my teams
+                      to create for the best idea, beyond confidence and comfort.
+                    </p>
+                  </div>
+
+                  <div className="mt-28 grid gap-y-8 font-kalmansk text-[clamp(1.65rem,2vw,2.65rem)] leading-none tracking-[0.02em]">
+                    <div className="flex flex-wrap items-center gap-x-10 gap-y-5">
+                      <span>{capabilities[0]}</span>
+                      <span>*</span>
+                      <span>{capabilities[1]}</span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-5">
+                      <span>*</span>
+                      <span>{capabilities[2]}</span>
+                      <span>*</span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-x-10 gap-y-5">
+                      <span>{capabilities[3]}</span>
+                      <span>*</span>
+                      <span>{capabilities[4]}</span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-5">
+                      <span>*</span>
+                      <span>{capabilities[5]}</span>
+                      <span>*</span>
+                    </div>
                   </div>
                 </div>
 
-                <div>
-                  <h2 className="font-abolition text-[clamp(3.5rem,5vw,5.5rem)] uppercase italic leading-none text-[#ededed]/70">
-                    Core capabilities.
-                  </h2>
-
-                  <ul className="mt-8 flex list-none flex-col gap-6 p-0 font-body text-[clamp(1.45rem,1.7vw,1.9rem)] font-bold leading-none text-[#ededed]">
-                    <li>Opportunity Discovery</li>
-                    <li>Systems Thinking</li>
-                    <li>Experience Design</li>
-                    <li>Rapid Prototyping</li>
-                    <li>Evidence-Based Pitching</li>
-                    <li>Self-Directed Learning</li>
-                  </ul>
-
-                  <p className="mt-8 max-w-[30ch] font-disket text-[9px] uppercase leading-[1.6] tracking-[0.12em] text-[#ededed]/55">
-                    Highlighted throughout relevant projects.
-                  </p>
+                <div className="p-4">
+                  <div className="h-full overflow-hidden bg-black">
+                    <video
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="h-full w-full object-cover"
+                    >
+                      <source
+                        src="/projects/home-practice-loop.mp4"
+                        type="video/mp4"
+                      />
+                    </video>
+                  </div>
                 </div>
-              </div>
-
-              <div className="h-[calc(100vh-44px-26px)] overflow-hidden border border-white/20 bg-black">
-                <video
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="h-full w-full object-cover"
-                >
-                  <source
-                    src="/projects/home-practice-loop.mp4"
-                    type="video/mp4"
-                  />
-                </video>
               </div>
             </div>
           </div>
         </div>
       </section>
+
+      <div className="hidden h-[20vh] bg-[#9c871f] min-[900px]:block" />
 
       <section className="block bg-[#232323] px-6 pb-16 pt-24 text-[#ededed] min-[900px]:hidden">
         <h1 className="font-grith text-[24vw] uppercase leading-[0.85]">
@@ -284,18 +302,6 @@ export default function HomeOpening() {
         <p className="mt-8 font-grith text-[14vw] uppercase leading-[0.9]">
           Building Interactive Systems
         </p>
-
-        <div className="mt-14 border-t border-white/20 pt-8">
-          <h2 className="font-abolition text-[3rem] uppercase italic text-[#ededed]/70">
-            What I do.
-          </h2>
-
-          <p className="mt-5 font-body text-[1.35rem] font-bold leading-[1.35]">
-            I work between design, technology and strategy to identify
-            opportunities, shape them into experience-led propositions, and
-            build prototypes that test their value.
-          </p>
-        </div>
       </section>
     </>
   );
