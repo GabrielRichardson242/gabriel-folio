@@ -1,6 +1,6 @@
 "use client";
 
-import GlastoSystemSection from "@/components/projects/glasto/GlastoSystemSection";
+import GlastoSystemSection from "@/components/projects/GlastoSystemSection";
 
 export default function GlastoPage() {
   return (

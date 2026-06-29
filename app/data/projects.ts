@@ -35,8 +35,14 @@ export const projects: Project[] = [
       "Interaction Design",
       "Rapid Prototyping",
       "Evidence-Based Pitching",
-      "Scalable Systems",
+      "Scalable Systems", 
     ],
+     railCopy: {
+      body:
+        "In response to observations of limitations for young artists using Instagram to promote their work, I prototyped a digital product offering mobile first, customisable 3D gallery spaces and quick connectivity to promote their channels.",
+      close:
+        "This was well received in pitches and at the Kingston School of Art’s Gallery Show.",
+    },
   },
   {
     slug: "restrained-visual-pace",

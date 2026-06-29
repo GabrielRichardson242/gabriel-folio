@@ -19,7 +19,7 @@ function ProjectTile({ project, index }: { project: Project; index: number }) {
               : undefined
           }
           alt={project.title}
-          className="absolute inset-0 z-0 h-full w-full object-cover transition-all duration-300 min-[900px]:group-hover:brightness-[0.65] min-[900px]:group-hover:scale-[1.015]"
+          className="absolute inset-0 z-0 h-full w-full object-cover transition-all duration-300 min-[900px]:group-hover:brightness-[0.5] min-[900px]:group-hover:scale-[1.015]"
           draggable={false}
         />
       ) : (
