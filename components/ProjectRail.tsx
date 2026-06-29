@@ -9,7 +9,7 @@ type ProjectRailProps = {
 
 function ProjectTile({ project, index }: { project: Project; index: number }) {
   const content = (
-    <div className="group relative h-full w-full overflow-hidden border-y border-white/10 bg-[#2b2b2b]">
+    <div className="relative h-full w-full overflow-hidden border-y border-white/10 bg-[#2b2b2b]">
       {project.image ? (
         <img
           src={project.image}
@@ -19,47 +19,63 @@ function ProjectTile({ project, index }: { project: Project; index: number }) {
               : undefined
           }
           alt={project.title}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 z-0 h-full w-full object-cover transition-all duration-300 min-[900px]:group-hover:brightness-[0.65] min-[900px]:group-hover:scale-[1.015]"
           draggable={false}
         />
       ) : (
-        <div className="absolute inset-0 bg-[#3a3a3a]" />
+        <div className="absolute inset-0 z-0 bg-[#3a3a3a]" />
       )}
 
-      <div className="absolute inset-0 bg-[rgba(220,232,245,0.38)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
       <div className="pointer-events-none absolute inset-0 z-10 opacity-100 min-[900px]:opacity-0 min-[900px]:transition-opacity min-[900px]:duration-300 min-[900px]:group-hover:opacity-100">
-        <div className="flex h-full flex-col justify-between px-6 py-8 min-[900px]:px-10 min-[900px]:py-10">
-          <div className="max-w-[720px]">
-            <div className="font-body text-[11px] uppercase tracking-[0.14em] text-[#ededed] min-[900px]:text-[12px]">
-              {project.category}
-            </div>
-
-            <h2 className="mt-4 font-head text-[clamp(3rem,6vw,6.4rem)] leading-[0.9] tracking-[-0.07em] text-[#ededed]">
+        <div className="h-full">
+          <div className="max-w-[980px] pl-[2.5vw] pt-[-4vw]">
+            <h2 className="mt-[60px] max-w-[78ch] font-grith text-[clamp(6.5rem,10vw,11rem)] uppercase leading-[0.88] tracking-[-0.005em] text-[#ededed] [font-synthesis:none]">
               {project.title}
             </h2>
 
-            <p className="mt-4 max-w-[34ch] font-body text-[clamp(1.05rem,1.5vw,1.45rem)] leading-[1.25] text-[#ededed]">
-              {project.note}
-            </p>
+            {project.railCopy ? (
+              <div className="-mt-[60px] max-w-[72ch] font-newrail text-[clamp(1.15rem,1.5vw,1.65rem)] font-bold leading-[1.12] text-[#ededed]">
+                {project.railCopy.question && (
+                  <p>{project.railCopy.question}</p>
+                )}
+
+                {project.railCopy.body && (
+                  <p className="mt-8">{project.railCopy.body}</p>
+                )}
+
+                {project.railCopy.close && (
+                  <p className="mt-8">{project.railCopy.close}</p>
+                )}
+              </div>
+            ) : (
+              <p className="-mt-[60px] max-w-[72ch] font-newrail text-[clamp(1.15rem,1.5vw,1.65rem)] font-bold leading-[1.12] text-[#ededed]">
+                {project.note}
+              </p>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
 
-  const section = (
-    <section data-project data-project-index={index} className="h-[78vh]">
-      {content}
-    </section>
-  );
-
-  if (project.disabled) return section;
+  if (project.disabled) {
+    return (
+      <section
+        data-project
+        data-project-index={index}
+        className="group h-[78vh]"
+      >
+        {content}
+      </section>
+    );
+  }
 
   return (
-    <Link href={`/project/${project.slug}`} className="block">
-      {section}
-    </Link>
+    <section data-project data-project-index={index} className="group h-[78vh]">
+      <Link href={`/project/${project.slug}`} className="block h-full">
+        {content}
+      </Link>
+    </section>
   );
 }
 

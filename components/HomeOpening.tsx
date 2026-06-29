@@ -233,13 +233,13 @@ export default function HomeOpening() {
                       have developed a practice centred around rapid
                       experimentation. Using emerging AI workflows, I&apos;ve
                       enabled fast, self-directed uptake of technical skills and
-                      tools, allowing me to move ideas from concept to testable 
+                      tools, allowing me to move from concept to testable 
                       prototypes under tight deadlines.
                     </p>
 
                     <p className="mt-16">
                       This has offered freedom in our ideation, allowing my teams
-                      to create for the best idea, beyond confidence and comfort.
+                      to create for the best idea, beyond confidence or comfort.
                     </p>
                   </div>
 

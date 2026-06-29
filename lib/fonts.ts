@@ -23,3 +23,9 @@ export const mrsEaves = localFont({
   variable: "--font-mrs-eaves",
   display: "swap",
 });
+
+export const grith = localFont({
+  src: "../public/fonts/Grith.otf",
+  variable: "--font-grith",
+  display: "swap",
+});

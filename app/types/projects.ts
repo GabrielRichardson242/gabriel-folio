@@ -1,3 +1,9 @@
+export type ProjectRailCopy = {
+  question?: string;
+  body?: string;
+  close?: string;
+};
+
 export type Project = {
   slug: string;
   title: string;
@@ -6,4 +12,5 @@ export type Project = {
   image?: string;
   disabled?: boolean;
   thinkingSkills: string[];
+  railCopy?: ProjectRailCopy;
 };
